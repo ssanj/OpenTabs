@@ -53,7 +53,7 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
     return list(map(lambda content: self.create_unsaved_panel_item(content), self.unsaved_views))
 
   def create_unsaved_panel_item(self, buffer_content):
-    return sublime.QuickPanelItem(buffer_content.tab_name, "<h3>{0}</h3>".format(buffer_content.tab_name))
+    return sublime.QuickPanelItem(buffer_content.tab_name, "", "unsaved")
 
 
   def when_file_selected(self, index):
