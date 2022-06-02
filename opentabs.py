@@ -7,6 +7,11 @@ class FileContents:
     self.file_name = file_name
     self.short_name = short_name
 
+  def last_path(self):
+    directory = os.path.dirname(self.file_name)
+    last_four_paths = directory.split(os.path.sep)[-4:]
+    return os.path.sep.join(last_four_paths)
+
   def __str__(self):
     return "FileContents(file_name={0}, short_name={1})".format(self.file_name, self.short_name)
 
@@ -47,7 +52,7 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
     return list(map(lambda content: self.create_panel_item(content), self.valid_views))
 
   def create_panel_item(self, file_content):
-    return sublime.QuickPanelItem(file_content.short_name, "<h3>{0}</h3><small>{1}</small>".format(file_content.short_name, file_content.file_name))
+    return sublime.QuickPanelItem(file_content.short_name, "{}".format(file_content.file_name), file_content.last_path())
 
   def create_unsaved_panel_items(self):
     return list(map(lambda content: self.create_unsaved_panel_item(content), self.unsaved_views))
