@@ -62,7 +62,7 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
       return sublime.QuickPanelItem(buffer_content.tab_name, "", "unsaved")
 
   def when_file_selected(self, index):
-    if self.tracked_views and len(self.tracked_views) > index:
+    if index != -1 and self.tracked_views and len(self.tracked_views) > index:
       some_content = self.tracked_views[index]
       if type(some_content) == FileContents:
         self.find_tab_by_filename(some_content)
