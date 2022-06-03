@@ -22,6 +22,12 @@ class BufferContents:
   def __init__(self, tab_name):
     self.tab_name = tab_name
 
+  def __str__(self):
+    return "BufferContents(tab_name={0})".format(self.tab_name)
+
+  def __repr__(self):
+    return self.__str__()
+
 
 class OpenTabsCommand(sublime_plugin.WindowCommand):
   def run(self):
