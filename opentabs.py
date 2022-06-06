@@ -43,10 +43,19 @@ class FileContents:
     else:
       return original
 
-  def last_path(self):
-    directory = os.path.dirname(self.file_name)
-    last_four_paths = directory.split(os.path.sep)[-4:]
-    return os.path.sep.join(last_four_paths)
+  """
+    Returns a truncated path should the path length exceed
+    a certain maximum value.
+  """
+  def truncated_path(self):
+    folder_path = self.folder_path()
+    if folder_path == "[project]":
+      return ""
+    else:
+      if len(folder_path) > 30: # move to settings
+        return "...{}".format(folder_path[-15:])
+      else:
+        return ""
 
   def __str__(self):
     return "FileContents(file_name={0}, short_name={1}, folder_name={2})".format(self.file_name, self.short_name, self.folder_name)
@@ -106,7 +115,7 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
   def create_file_panel_item(self, some_content):
     if type(some_content) == FileContents:
       file_content = some_content
-      return sublime.QuickPanelItem(file_content.short_name, "<i>{}</i>".format(file_content.folder_path()), file_content.last_path(), sublime.KIND_NAVIGATION)
+      return sublime.QuickPanelItem(file_content.short_name, "<i>{}</i>".format(file_content.folder_path()), file_content.truncated_path(), sublime.KIND_NAVIGATION)
     else:
       buffer_content = some_content
       return sublime.QuickPanelItem(buffer_content.tab_name, "", "unsaved", sublime.KIND_NAVIGATION)
