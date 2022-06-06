@@ -61,10 +61,10 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
   def create_file_panel_item(self, some_content):
     if type(some_content) == FileContents:
       file_content = some_content
-      return sublime.QuickPanelItem(file_content.short_name, "{}".format(file_content.file_name), file_content.last_path())
+      return sublime.QuickPanelItem(file_content.short_name, "{}".format(file_content.file_name), file_content.last_path(), sublime.KIND_NAVIGATION)
     else:
       buffer_content = some_content
-      return sublime.QuickPanelItem(buffer_content.tab_name, "", "unsaved")
+      return sublime.QuickPanelItem(buffer_content.tab_name, "", "unsaved", sublime.KIND_NAVIGATION)
 
   def when_file_selected(self, index):
     if index != -1 and self.tracked_views and len(self.tracked_views) > index:
