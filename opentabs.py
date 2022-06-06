@@ -3,6 +3,9 @@ import sublime_plugin
 import os
 
 class FileContents:
+
+  project_folder_path = "[project]"
+
   def __init__(self, file_name, short_name, folder_name):
     self.file_name = file_name
     self.short_name = short_name
@@ -22,7 +25,7 @@ class FileContents:
         return with_leading_ending_path_sep
       else:
         # with_leading_ending_path_sep is empty, the file is in the project dir
-        return "[project]"
+        return self.project_folder_path
 
   def strip_path_sep(self, original):
     return self.strip_char(original, os.path.sep)
@@ -37,6 +40,7 @@ class FileContents:
     else:
       return original
 
+  # removesuffix is added in Python 3.9+
   def removesuffix(self, original, prefix):
     if original.endswith(prefix):
       return original[:-len(prefix)]
@@ -47,13 +51,13 @@ class FileContents:
     Returns a truncated path should the path length exceed
     a certain maximum value.
   """
-  def truncated_path(self):
+  def truncated_path(self, settings):
     folder_path = self.folder_path()
-    if folder_path == "[project]":
+    if folder_path == self.project_folder_path:
       return ""
     else:
-      if len(folder_path) > 30: # move to settings
-        return "...{}".format(folder_path[-15:])
+      if len(folder_path) > settings.truncation_line_length:
+        return "...{}".format(folder_path[-settings.truncation_preview_length:])
       else:
         return ""
 
@@ -73,12 +77,41 @@ class BufferContents:
   def __repr__(self):
     return self.__str__()
 
+class OpenTabSettings:
+
+  def __init__(self, truncation_line_length, truncation_preview_length):
+    self.truncation_line_length = truncation_line_length
+    self.truncation_preview_length = truncation_preview_length
+
+  def __str__(self):
+    return "OpenTabSettings(truncation_line_length={0}, truncation_preview_length={1})".format(self.truncation_line_length, self.truncation_preview_length)
+
+  def __repr__(self):
+    return self.__str__()
 
 class OpenTabsCommand(sublime_plugin.WindowCommand):
+
+  def load_open_tab_settings(self):
+    settings = sublime.load_settings("OpenTabs.sublime-settings")
+    if settings.has('truncation_line_length') and settings.has('truncation_preview_length'):
+      return OpenTabSettings(settings.get('truncation_line_length'), settings.get('truncation_preview_length'))
+    else:
+      print(
+        """
+        Could not find 'truncation_line_length' and 'truncation_preview_length' settings.
+         Defaulting truncation_line_length: 30 and truncation_preview_length:15
+         Update OpenTabs.sublime-settings to change the above values.
+        """
+      )
+
+      return OpenTabSettings(30, 15)
+
   def run(self):
     window = self.window
     self.views = window.views()
     self.tracked_views = []
+
+    self.settings = self.load_open_tab_settings()
 
     folder_name = self.get_folder_name()
 
@@ -115,7 +148,7 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
   def create_file_panel_item(self, some_content):
     if type(some_content) == FileContents:
       file_content = some_content
-      return sublime.QuickPanelItem(file_content.short_name, "<i>{}</i>".format(file_content.folder_path()), file_content.truncated_path(), sublime.KIND_NAVIGATION)
+      return sublime.QuickPanelItem(file_content.short_name, "<u>{}</u>".format(file_content.folder_path()), file_content.truncated_path(self.settings), sublime.KIND_NAVIGATION)
     else:
       buffer_content = some_content
       return sublime.QuickPanelItem(buffer_content.tab_name, "", "unsaved", sublime.KIND_NAVIGATION)

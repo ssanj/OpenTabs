@@ -1,0 +1,9 @@
+{
+  // Line length after which a hint is provided in the
+  // the droplist on the right
+  "truncation_line_length": 80,
+
+  // The number of characters to show of the path starting from the
+  // end
+  "truncation_preview_length": 25,
+}
