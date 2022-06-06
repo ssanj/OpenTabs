@@ -48,7 +48,12 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
 
     if self.tracked_views:
       panel_items = self.create_panel_items()
-      window.show_quick_panel(panel_items, self.when_file_selected)
+      window.show_quick_panel(
+        panel_items,
+        self.when_file_selected,
+        placeholder = "OpenTabs: {}".format(len(panel_items)),
+        on_highlight = self.when_file_selected
+      )
 
   def create_panel_items(self):
     return list(map(lambda content: self.create_file_panel_item(content), self.tracked_views))
