@@ -1,3 +1,4 @@
 [
-    { "caption": "Opentabs: Find Open Tabs", "command": "open_tabs" },
+    { "caption": "OpenTabs: Find Open Tabs", "command": "open_tabs" },
+    { "caption": "Preferences: OpenTabs Settings", "command": "edit_settings", "args": { "base_file": "${packages}/OpenTabs/OpenTabs.sublime-settings", "default": "{\n$0\n}\n" } },
 ]
