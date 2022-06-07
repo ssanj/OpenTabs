@@ -110,12 +110,19 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
     window = self.window
     self.views = window.views()
     self.tracked_views = []
+    self.selected_index = -1
+    self.index = -1
 
     self.settings = self.load_open_tab_settings()
 
     folder_name = self.get_folder_name()
 
     for view in self.views:
+      self.index += 1 #start at 0
+      active_view = self.window.active_view()
+      if active_view and active_view == view:
+        self.selected_index = self.index
+
       file_name = view.file_name()
       if file_name:
         short_name = os.path.basename(file_name)
@@ -129,8 +136,8 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
     if self.tracked_views:
       panel_items = self.create_panel_items()
       window.show_quick_panel(
-        panel_items,
-        self.when_file_selected,
+        items = panel_items,
+        on_select = self.when_file_selected,
         placeholder = "OpenTabs: {}".format(len(panel_items)),
         on_highlight = self.when_file_selected
       )
@@ -154,8 +161,9 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
       return sublime.QuickPanelItem(buffer_content.tab_name, "", "unsaved", sublime.KIND_NAVIGATION)
 
   def when_file_selected(self, index):
-    if index != -1 and self.tracked_views and len(self.tracked_views) > index:
-      some_content = self.tracked_views[index]
+    user_selection = self.selected_index if index == -1 else index
+    if user_selection != -1 and self.tracked_views and len(self.tracked_views) > user_selection:
+      some_content = self.tracked_views[user_selection]
       if type(some_content) == FileContents:
         self.find_tab_by_filename(some_content)
       else:
