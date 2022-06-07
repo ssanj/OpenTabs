@@ -110,6 +110,7 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
     window = self.window
     self.views = window.views()
     self.tracked_views = []
+    self.buffers = []
     self.selected_index = -1
     self.index = -1
 
@@ -132,6 +133,7 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
         if view.name():
           contents = BufferContents(view.name())
           self.tracked_views.append(contents)
+          self.buffers.append(view) # add the names to a separate list for quick searching
 
     if self.tracked_views:
       panel_items = self.create_panel_items()
@@ -184,7 +186,7 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
 
 
   def find_view_by_tab_name(self, tab_name):
-    for view in self.views:
+    for view in self.buffers:
       if not view.file_name() and view.name() == tab_name:
         return view
 
