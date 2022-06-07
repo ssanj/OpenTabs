@@ -108,41 +108,71 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
 
   def run(self):
     window = self.window
-    self.views = window.views()
+    # self.views = window.views()
     self.tracked_views = []
     self.buffers = []
     self.selected_index = -1
     self.index = -1
+    self.has_groups = False
 
     self.settings = self.load_open_tab_settings()
 
     folder_name = self.get_folder_name()
 
-    for view in self.views:
-      self.index += 1 #start at 0
-      active_view = self.window.active_view()
-      if active_view and active_view == view:
-        self.selected_index = self.index
+    groups = list(range(window.num_groups()))
 
-      file_name = view.file_name()
-      if file_name:
-        short_name = os.path.basename(file_name)
-        contents = FileContents(file_name, short_name, folder_name)
-        self.tracked_views.append(contents)
-      else:
-        if view.name():
-          contents = BufferContents(view.name())
+    if len(groups) == 1: # no groups essentially
+      for view in window.views():
+        self.index += 1 #start at 0
+        active_view = self.window.active_view()
+        if active_view and active_view == view:
+          # We will show a preview of the highlighted file in this mode only
+          self.selected_index = self.index
+
+        file_name = view.file_name()
+        if file_name:
+          short_name = os.path.basename(file_name)
+          contents = FileContents(file_name, short_name, folder_name)
           self.tracked_views.append(contents)
-          self.buffers.append(view) # add the names to a separate list for quick searching
+        else:
+          if view.name():
+            contents = BufferContents(view.name())
+            self.tracked_views.append(contents)
+            self.buffers.append(view) # add the names to a separate list for quick searching
+    else:
+      self.has_groups = True
+      for group_index in groups:
+        views = window.views_in_group(group_index)
+
+        for view in views:
+          file_name = view.file_name()
+          if file_name:
+            short_name = os.path.basename(file_name)
+            contents = FileContents(file_name, short_name, folder_name)
+            self.tracked_views.append(contents)
+          else:
+            if view.name():
+              contents = BufferContents(view.name())
+              self.tracked_views.append(contents)
+              self.buffers.append(view) # add the names to a separate list for quick searching
 
     if self.tracked_views:
       panel_items = self.create_panel_items()
-      window.show_quick_panel(
-        items = panel_items,
-        on_select = self.when_file_selected,
-        placeholder = "OpenTabs: {}".format(len(panel_items)),
-        on_highlight = self.when_file_selected
-      )
+      if self.has_groups:
+        # Don't show previews
+        window.show_quick_panel(
+          items = panel_items,
+          on_select = self.when_file_selected,
+          placeholder = "OpenTabs: {}".format(len(panel_items))
+        )
+      else:
+        # Show previews on_highlight
+        window.show_quick_panel(
+          items = panel_items,
+          on_select = self.when_file_selected,
+          placeholder = "OpenTabs: {}".format(len(panel_items)),
+          on_highlight = self.when_file_selected
+        )
 
   def get_folder_name(self):
     window = self.window
