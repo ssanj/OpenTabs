@@ -6,10 +6,10 @@ class FileContents:
 
   project_folder_path = "[project]"
 
-  def __init__(self, view_id, file_name, short_name, folder_name):
-    self.view_id = view_id
-    self.file_name = file_name
-    self.short_name = short_name
+  def __init__(self, view, folder_name):
+    self.view = view
+    self.file_name = view.file_name()
+    self.short_name = os.path.basename(view.file_name())
     self.folder_name = folder_name
 
   def folder_path(self):
@@ -63,18 +63,18 @@ class FileContents:
         return ""
 
   def __str__(self):
-    return "FileContents(file_name={0}, short_name={1}, folder_name={2})".format(self.file_name, self.short_name, self.folder_name)
+    return "FileContents(view_id={0}, file_name={1}, short_name={2}, folder_name={3})".format(self.view.id(), self.file_name, self.short_name, self.folder_name)
 
   def __repr__(self):
     return self.__str__()
 
 class BufferContents:
-  def __init__(self, view_id, tab_name):
-    self.view_id = view_id
-    self.tab_name = tab_name
+  def __init__(self, view):
+    self.view = view
+    self.tab_name = view.name()
 
   def __str__(self):
-    return "BufferContents(view_id={0}, tab_name={1})".format(self.view_id, self.tab_name)
+    return "BufferContents(view_id={0}, tab_name={1})".format(self.view.id(), self.tab_name)
 
   def __repr__(self):
     return self.__str__()
@@ -111,7 +111,6 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
   def run(self):
     window = self.window
     self.tracked_views = []
-    self.buffers = []
     self.selected_index = -1
     self.index = -1
     self.has_groups = window.num_groups() > 1
@@ -146,22 +145,21 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
 
       for view in views:
 
-        self.index += 1 #start at 0
-        active_view = window.active_view()
-        if active_view and active_view == view:
-          self.selected_index = self.index
+        if not self.has_groups:
+          self.index += 1 #start at 0
+          active_view = window.active_view()
+          if active_view and active_view == view:
+            self.selected_index = self.index
 
-        file_name = view.file_name()
-        view_id = view.id()
-        if file_name:
-          short_name = os.path.basename(file_name)
-          contents = FileContents(view_id, file_name, short_name, folder_name)
+        if view.file_name():
+          contents = FileContents(view, folder_name)
+          self.tracked_views.append(contents)
+        elif view.name():
+          contents = BufferContents(view)
           self.tracked_views.append(contents)
         else:
-          if view.name():
-            contents = BufferContents(view_id, view.name())
-            self.tracked_views.append(contents)
-            self.buffers.append(view) # add the names to a separate list for quick searching
+          pass
+
 
   def get_folder_name(self):
     window = self.window
@@ -186,7 +184,7 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
     user_selection = self.selected_index if index == -1 else index
     if user_selection != -1 and self.tracked_views and len(self.tracked_views) > user_selection:
       some_content = self.tracked_views[user_selection]
-      window.focus_view(some_content)
+      window.focus_view(some_content.view)
 
   def is_enabled(self):
     views = self.window.views()
