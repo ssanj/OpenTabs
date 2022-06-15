@@ -70,9 +70,15 @@ class FileContents:
     return self.__str__()
 
 class BufferContents:
+
   def __init__(self, view):
     self.view = view
-    self.tab_name = view.name()
+    view_name = view.name()
+    if view_name and len(view_name.strip()) > 0:
+      self.tab_name = view_name
+    else:
+      self.tab_name = "untitled"
+
 
   def __str__(self):
     return f"BufferContents(view_id={self.view.id()}, tab_name={self.tab_name})"
@@ -155,11 +161,9 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
         if view.file_name():
           contents = FileContents(view, folder_name)
           self.tracked_views.append(contents)
-        elif view.name():
+        else:
           contents = BufferContents(view)
           self.tracked_views.append(contents)
-        else:
-          pass
 
 
   def get_folder_name(self):
