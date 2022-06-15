@@ -58,12 +58,13 @@ class FileContents:
       return ""
     else:
       if len(folder_path) > settings.truncation_line_length:
-        return "...{}".format(folder_path[-settings.truncation_preview_length:])
+        truncated_folder_path = folder_path[-settings.truncation_preview_length:]
+        return f"...{truncated_folder_path}"
       else:
         return ""
 
   def __str__(self):
-    return "FileContents(view_id={0}, file_name={1}, short_name={2}, folder_name={3})".format(self.view.id(), self.file_name, self.short_name, self.folder_name)
+    return f"FileContents(view_id={self.view.id()}, file_name={self.file_name}, short_name={self.short_name}, folder_name={self.folder_name})"
 
   def __repr__(self):
     return self.__str__()
@@ -74,7 +75,7 @@ class BufferContents:
     self.tab_name = view.name()
 
   def __str__(self):
-    return "BufferContents(view_id={0}, tab_name={1})".format(self.view.id(), self.tab_name)
+    return f"BufferContents(view_id={self.view.id()}, tab_name={self.tab_name})"
 
   def __repr__(self):
     return self.__str__()
@@ -86,7 +87,7 @@ class OpenTabSettings:
     self.truncation_preview_length = truncation_preview_length
 
   def __str__(self):
-    return "OpenTabSettings(truncation_line_length={0}, truncation_preview_length={1})".format(self.truncation_line_length, self.truncation_preview_length)
+    return f"OpenTabSettings(truncation_line_length={self.truncation_line_length}, truncation_preview_length={self.truncation_preview_length})"
 
   def __repr__(self):
     return self.__str__()
@@ -125,14 +126,14 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
         window.show_quick_panel(
           items = panel_items,
           on_select = self.when_file_selected,
-          placeholder = "OpenTabs: {}".format(len(panel_items))
+          placeholder = f"OpenTabs: {len(panel_items)}"
         )
       else:
         # Show previews on_highlight
         window.show_quick_panel(
           items = panel_items,
           on_select = self.when_file_selected,
-          placeholder = "OpenTabs: {}".format(len(panel_items)),
+          placeholder = f"OpenTabs: {len(panel_items)}",
           on_highlight = self.when_file_selected
         )
 
@@ -174,7 +175,7 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
   def create_file_panel_item(self, some_content):
     if type(some_content) == FileContents:
       file_content = some_content
-      return sublime.QuickPanelItem(file_content.short_name, "<u>{}</u>".format(file_content.folder_path()), file_content.truncated_path(self.settings), sublime.KIND_VARIABLE)
+      return sublime.QuickPanelItem(file_content.short_name, f"<u>{file_content.folder_path()}</u>", file_content.truncated_path(self.settings), sublime.KIND_VARIABLE)
     else:
       buffer_content = some_content
       return sublime.QuickPanelItem(buffer_content.tab_name, "", "unsaved", sublime.KIND_NAVIGATION)
