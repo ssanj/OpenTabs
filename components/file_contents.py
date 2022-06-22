@@ -22,9 +22,9 @@ class FileContents:
     self.folder_name = maybe_folder_name.value if maybe_folder_name else None
     self.group: int = group.value
 
-  def folder_path(self) -> Optional[str]:
+  def folder_path(self) -> str:
     if self.folder_name is None:
-      return None
+      return "-"
     else:
       # Path without folder name
       base_path = self.removeprefix(self.file_name, self.folder_name)

@@ -103,11 +103,27 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
 
   def create_file_panel_item(self, some_content: Union[FileContents, BufferContents]) -> sublime.QuickPanelItem:
     if type(some_content) == FileContents:
-      file_content: FileContents = cast(FileContents, some_content)
-      return sublime.QuickPanelItem(file_content.short_name, "<u>{}</u>".format(file_content.folder_path()), file_content.truncated_path(self.settings), sublime.KIND_VARIABLE)
+      return self.file_content_quick_panel_item(cast(FileContents, some_content))
     else:
-      buffer_content: BufferContents = cast(BufferContents, some_content)
-      return sublime.QuickPanelItem(buffer_content.tab_name, "", "unsaved", sublime.KIND_NAVIGATION)
+      return self.buffer_content_quick_panel_item(cast(BufferContents, some_content))
+
+  def file_content_quick_panel_item(self, file_content: FileContents) -> sublime.QuickPanelItem:
+      group = file_content.group
+      trigger = f"{file_content.short_name}|{group}"
+      folder_path = file_content.folder_path()
+      truncated_path = file_content.truncated_path(self.settings)
+      details: Union[str, List[str]] = [f"<u>folder: {folder_path}</u>", truncated_path]
+      annotation = f"group{group}"
+      kind = sublime.KIND_VARIABLE
+      return sublime.QuickPanelItem(trigger, details, annotation, kind)
+
+  def buffer_content_quick_panel_item(self, buffer_content: BufferContents) -> sublime.QuickPanelItem:
+      group = buffer_content.group.value
+      trigger = f"{buffer_content.tab_name}|{group}"
+      details: Union[str, List[str]] = "*unsaved"
+      annotation = f"group{buffer_content.group.value}"
+      kind = sublime.KIND_NAVIGATION
+      return sublime.QuickPanelItem(trigger, details, annotation, kind)
 
   def when_file_selected(self, index: int) -> None:
     window = self.window
