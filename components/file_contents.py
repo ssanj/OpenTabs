@@ -10,11 +10,17 @@ class ViewFileName(NamedTuple):
 class FolderName(NamedTuple):
   value: str
 
+class TruncatedFolder(NamedTuple):
+  truncated_folder_path: str
+  truncated_suffix: str
+
 
 class FileContents:
 
   project_folder_path = "[project]"
 
+  # TODO: Should this constructor accept Optional[FolderName]?
+  # If it doesn't have a folder path this is invalid.
   def __init__(self, view: sublime.View, file_name: ViewFileName, maybe_folder_name: Optional[FolderName], group: Group):
     self.view = view
     self.file_name: str = file_name.value
@@ -62,19 +68,25 @@ class FileContents:
     Returns a truncated path should the path length exceed
     a certain maximum value.
   """
-  def truncated_path(self, settings: OpenTabSettings) -> str:
-    maybe_folder_path: Optional[str] = self.folder_path()
+  def truncated_path(self, settings: OpenTabSettings) -> TruncatedFolder:
+    # TODO: This is not optional any more. See: line: 26
+    maybe_folder_path: str = self.folder_path()
     if maybe_folder_path:
       folder_path: str = maybe_folder_path
+      no_truncation = TruncatedFolder(folder_path, "")
       if folder_path == self.project_folder_path:
-        return ""
+        return no_truncation
       else:
         if len(folder_path) > settings.truncation_line_length:
-          return "...{}".format(folder_path[-settings.truncation_preview_length:])
+          truncated_folder_prefix = folder_path[:settings.truncation_preview_length]
+          truncated_folder_path = f"{truncated_folder_prefix}..."
+          truncated_folder_suffix = folder_path[-settings.truncation_preview_length:]
+          truncated_suffix = f"...{truncated_folder_suffix}"
+          return TruncatedFolder(truncated_folder_path, truncated_suffix)
         else:
-          return ""
+          return no_truncation
     else:
-      return ""
+      return TruncatedFolder("", "")
 
 
   def __str__(self) -> str:

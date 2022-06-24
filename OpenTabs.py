@@ -5,6 +5,7 @@ from typing import Optional, List, Union, cast
 from OpenTabs.components.file_contents import FileContents
 from OpenTabs.components.file_contents import ViewFileName
 from OpenTabs.components.file_contents import FolderName
+from OpenTabs.components.file_contents import TruncatedFolder
 from OpenTabs.components.open_tab_settings import OpenTabSettings
 from OpenTabs.components.group import Group
 from OpenTabs.components.buffer_contents import BufferContents
@@ -110,9 +111,10 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
   def file_content_quick_panel_item(self, file_content: FileContents) -> sublime.QuickPanelItem:
       group = file_content.group
       trigger = f"{file_content.short_name}|{group}"
-      folder_path = file_content.folder_path()
-      truncated_path = file_content.truncated_path(self.settings)
-      details: Union[str, List[str]] = [f"<u>folder: {folder_path}</u>", truncated_path]
+      truncated_folder: TruncatedFolder = file_content.truncated_path(self.settings)
+      truncated_folder_path = truncated_folder.truncated_folder_path
+      truncated_suffix = truncated_folder.truncated_suffix
+      details: Union[str, List[str]] = [f"<u>{truncated_folder_path}</u>", f"<strong>{truncated_suffix}</strong>"]
       annotation = f"group{group}"
       kind = sublime.KIND_VARIABLE
       return sublime.QuickPanelItem(trigger, details, annotation, kind)
