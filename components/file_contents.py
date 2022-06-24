@@ -1,5 +1,6 @@
 import sublime
-from typing import Optional, NamedTuple
+from typing import Optional
+from typing import  NamedTuple
 import os
 from OpenTabs.components.group import Group
 from OpenTabs.components.open_tab_settings import OpenTabSettings
@@ -27,6 +28,7 @@ class FileContents:
     self.short_name: str = os.path.basename(self.file_name)
     self.folder_name = maybe_folder_name.value if maybe_folder_name else None
     self.group: int = group.value
+    self.modified = view.is_dirty()
 
   def folder_path(self) -> str:
     if self.folder_name is None:
@@ -98,4 +100,5 @@ class FileContents:
     short_name = self.short_name
     folder_name = self.folder_name
     group = self.group
-    return f"FileContents(view_id={id}, file_name={file_name}, short_name={short_name}, folder_name={folder_name}, group={group})"
+    modified = self.modified
+    return f"FileContents(view_id={id}, file_name={file_name}, short_name={short_name}, folder_name={folder_name}, group={group}, modified={modified})"

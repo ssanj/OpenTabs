@@ -78,6 +78,7 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
         if (maybe_view_file_name := view.file_name()) is not None:
           view_file_name = ViewFileName(maybe_view_file_name)
           folder_name = FolderName(maybe_folder_name) if maybe_folder_name else None
+          # TODO: Use Internal View class to wrap sublime.View so we can tests it
           contents = FileContents(view, view_file_name, folder_name, group)
           self.tracked_views.append(contents)
         elif view.name():
@@ -114,7 +115,9 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
       truncated_folder: TruncatedFolder = file_content.truncated_path(self.settings)
       truncated_folder_path = truncated_folder.truncated_folder_path
       truncated_suffix = truncated_folder.truncated_suffix
-      details: Union[str, List[str]] = [f"<u>{truncated_folder_path}</u>", f"<strong>{truncated_suffix}</strong>"]
+      modified = file_content.modified
+      modified_str = "<strong>*<strong>modified" if modified else ""
+      details: Union[str, List[str]] = [f"<u>{truncated_folder_path}</u>", f"<strong>{truncated_suffix}</strong>", modified_str]
       annotation = f"group{group}"
       kind = sublime.KIND_VARIABLE
       return sublime.QuickPanelItem(trigger, details, annotation, kind)
