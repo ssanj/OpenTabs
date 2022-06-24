@@ -55,6 +55,7 @@ class OpenTabsCommand(sublime_plugin.WindowCommand):
           items = panel_items,
           on_select = self.when_file_selected,
           placeholder = f"OpenTabs: {number_of_items}",
+          selected_index = self.selected_index,
           on_highlight = self.when_file_selected
         )
 
